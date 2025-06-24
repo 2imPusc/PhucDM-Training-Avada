@@ -1,0 +1,158 @@
+{
+    "info": {
+        "_postman_id": "1114488b-fc12-46a9-87ff-3983dbb19d05",
+        "name": "Products API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": ""
+    },
+    "item": [
+        {
+            "name": "GET ALL",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:5000/api/products/",
+                    "path": [
+                        "api",
+                        "products"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000"
+                }
+            }
+        },
+        {
+            "name": "GET BY ID",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:5000/api/product/1001?fields=name,price",
+                    "query": [
+                        {
+                            "key": "fields",
+                            "value": "name,price"
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "api",
+                        "product",
+                        "1001"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000"
+                }
+            }
+        },
+        {
+            "name": "GET LIMIT",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:5000/api/products?limit=3",
+                    "query": [
+                        {
+                            "key": "limit",
+                            "value": "3"
+                        },
+                        {
+                            "key": "orderBy",
+                            "value": "desc",
+                            "disabled": true
+                        }
+                    ],
+                    "variable": [],
+                    "path": [
+                        "api",
+                        "products"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000"
+                }
+            }
+        },
+        {
+            "name": "CREATE",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://localhost:5000/api/products",
+                    "path": [
+                        "api",
+                        "products"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"name\": \"Rustic Bamboo Ball\",\n  \"price\": 660.89,\n  \"description\": \"Introducing the Mozambique-inspired Chips, blending cruel style with local craftsmanship\",\n  \"product\": \"Pants\",\n  \"color\": 123,\n  \"image\": \"https://loremflickr.com/3086/3342?lock=6002856737774629\"\n}"
+                }
+            }
+        },
+        {
+            "name": "DELETE",
+            "request": {
+                "method": "DELETE",
+                "url": {
+                    "raw": "http://localhost:5000/api/product/1002",
+                    "path": [
+                        "api",
+                        "product",
+                        "1002"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000"
+                }
+            }
+        },
+        {
+            "name": "UPDATE",
+            "request": {
+                "method": "PUT",
+                "url": {
+                    "raw": "http://localhost:5000/api/product/1001",
+                    "path": [
+                        "api",
+                        "product",
+                        "1001"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "5000"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"price\": 660.89,\n  \"description\": \"Introducing the Mozambique-inspired Chips, blending cruel style with local craftsmanship\",\n  \"product\": \"Pants\",\n  \"color\": \"red\",\n  \"image\": \"https://loremflickr.com/3086/3342?lock=6002856737774629\",\n  \"id\": 1001,\n  \"createdAt\": \"2025-06-24T07:16:36.335Z\"\n}"
+                }
+            }
+        }
+    ]
+}
