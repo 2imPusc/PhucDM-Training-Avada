@@ -1,9 +1,17 @@
+const BASE_URL = 'https://jsonplaceholder.typicode.com';
+
+async function fetchJson (endpoint) {
+  const res = await fetch(`${BASE_URL}/${endpoint}`);
+  if (!res.ok) throw new Error(`Fetch error: ${res.status}`);
+  return res.json();
+}
+
 async function mapUserData() {
   // 1, 2. Get all users, posts, comments from the JSONPlaceholder API
   const [users, posts, comments] = await Promise.all([
-    fetch('https://jsonplaceholder.typicode.com/users').then(response => response.json()),
-    fetch('https://jsonplaceholder.typicode.com/posts').then(response => response.json()),
-    fetch('https://jsonplaceholder.typicode.com/comments').then(response => response.json())
+    fetchJson('users'),
+    fetchJson('posts'),
+    fetchJson('comments')
   ])
 
   //3. Map the data with the users array
@@ -62,8 +70,8 @@ mapUserData();
 // 8. Get the post with ID of 1 via API request, at the same time get comments for post ID of 1 via another API request. Merge the post data with format:
 async function getPostWithComments () {
   const [post, comments] = await Promise.all([
-    fetch('https://jsonplaceholder.typicode.com/posts/1').then(response => response.json()),
-    fetch('https://jsonplaceholder.typicode.com/comments?postId=1').then(response => response.json())
+    fetchJson('posts/1'),
+    fetchJson('comments?postId=1')
   ]);
 
   const {userId, id, title, body} = post;
