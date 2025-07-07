@@ -1,9 +1,19 @@
 {
   "data": [
     {
-      "id": 1,
-      "text": "Task 1",
+      "id": "fff0c302-a09f-4929-8c87-465a258d1e80",
+      "title": "Task 1",
       "isCompleted": false
+    },
+    {
+      "id": "3a3a6461-c8a7-4bf8-baff-7d985ae1b379",
+      "title": "Task 2",
+      "isCompleted": true
+    },
+    {
+      "id": "c426fc8c-2db0-4c24-a737-a6467ac26a55",
+      "title": "Task 3",
+      "isCompleted": true
     }
   ]
 }

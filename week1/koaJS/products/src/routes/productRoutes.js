@@ -1,6 +1,6 @@
 const Router = require('koa-router');
 const productHandlers = require('../handlers/products/productHandlers.js');
-const productInputMiddleware = require('../middleware/productInputMiddleware.js');
+const { productInputMiddleware } = require('../middleware/productInputMiddleware.js');
 
 const router = new Router();
 

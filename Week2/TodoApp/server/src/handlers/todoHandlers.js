@@ -1,8 +1,14 @@
 const { getAll, update, add, remove } = require('../database/todoRepository');
 
+/**
+ * Get the list of all todos and return via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @returns {Promise<void>} Returns a response containing the list of todos.
+ */
 async function getTodos(ctx) {
     try {
-        const todos = getAll();
+        const todos = await getAll();
         ctx.body = {
             data: todos
         };
@@ -15,12 +21,19 @@ async function getTodos(ctx) {
     }
 }
 
+/**
+ * Create a new todo and return it via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @returns {Promise<void>} Returns a response containing the newly created todo.
+ */
 async function createTodo(ctx) {
     try {
         const newTodoData = ctx.request.body;
-        const newTodo = add(newTodoData);
+        const newTodo = await add(newTodoData);
         ctx.status = 201;
         ctx.body = {
+            success: true,
             data: newTodo
         };
     } catch (error) {
@@ -32,37 +45,41 @@ async function createTodo(ctx) {
     }
 }
 
+/**
+ * Update a todo by id and return the updated todo via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @returns {Promise<void>} Returns a response containing the updated todo.
+ */
 async function updateTodo(ctx) {
     try {
-        const id = parseInt(ctx.params.id);
+        const id = ctx.params.id;
         const updatedData = ctx.request.body;
-        const updatedTodo = update(id, updatedData);
-        ctx.body = {
-            data: updatedTodo
+        const updatedTodo = await update(id, updatedData);
+        ctx.body = { 
+            success: true, 
+            data: updatedTodo 
         };
     } catch (error) {
         ctx.status = 500;
-        ctx.body = {
-            success: false,
-            error: error.message
+        ctx.body = { 
+            success: false, 
+            error: error.message 
         };
     }
 }
 
+/**
+ * Delete a todo by id via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @returns {Promise<void>} Returns a response indicating the result of the deletion.
+ */
 async function deleteTodo(ctx) {
     try {
-        const id = parseInt(ctx.params.id, 10);
-        const isDeleted = remove(id);
-        if (isDeleted) {
-            ctx.status = 204;
-            console.log(`Todo ${id} deleted successfully`);
-        } else {
-            ctx.status = 404;
-            ctx.body = {
-                success: false,
-                error: 'Todo not found'
-            };
-        }
+        const id = ctx.params.id;
+        await remove(id);
+        ctx.status = 200;
     } catch (error) {
         ctx.status = 500;
         ctx.body = {

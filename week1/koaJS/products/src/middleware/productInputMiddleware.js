@@ -3,7 +3,7 @@ const yup = require('yup');
 async function productInputMiddleware(ctx, next) {
     try {
         const newProductData = ctx.request.body;
-        let schema = yup.object().shape({
+        const schema = yup.object().shape({
             name: yup.string().required(),
             price: yup.number().positive().required(),
             description: yup.string().required(),
@@ -23,4 +23,30 @@ async function productInputMiddleware(ctx, next) {
     }
 }
 
-module.exports = productInputMiddleware;
+async function productUpdateMiddleware (ctx, next) {
+    try {
+        const updateData = ctx.request.body;
+        const schema = yup.object().shape({
+            name: yup.string(),
+            price: yup.number().positive(),
+            description: yup.string(),
+            product: yup.string(),
+            color: yup.string(),
+            image: yup.string().url(),
+        });
+        await schema.validate(updateData);
+        next();
+    } catch (err) {
+        ctx.status = 400;
+        ctx.body = {
+            success: false,
+            errors: err.errors,
+            errorsName: err.name
+        }
+    }
+}
+
+module.exports = {
+    productInputMiddleware,
+    productUpdateMiddleware
+};

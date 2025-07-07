@@ -1,60 +1,23 @@
-// const fs = require('fs');
-// const path = require('path');
-// const dataPath = path.join(__dirname, 'todos.json');
-
-// const {data: todos} = require('./todos.json');
-
-// function getAll() {
-//     return todos;
-// }
-
-// function update(id, updatedTodo) {
-//     const index = todos.findIndex((todo) => todo.id === id);
-//     if (index === -1) {
-//         throw new Error('Todo not found');
-//     }
-//     todos[index] = {...todos[index], ...updatedTodo};
-//     fs.writeFileSync(dataPath, JSON.stringify({data: todos}, null, 2), 'utf8');
-//     return todos[index];
-// }
-
-// function add(newTodoData) {
-//     const newTodo = {
-//         id: todos.length > 0 ? todos[todos.length -1].id + 1 : 1,
-//         ...newTodoData,
-//         isCompleted: false,
-//     };
-//     todos.push(newTodo);
-//     fs.writeFileSync(dataPath, JSON.stringify({data: todos}, null, 2), 'utf8');
-//     return newTodo;
-// }
-
-// function remove(id) {
-//     const index = todos.findIndex((todo) => todo.id === id);
-//     if (index !== -1) {
-//         todos.splice(index, 1);
-//         fs.writeFileSync(dataPath, JSON.stringify({data: todos}, null, 2), 'utf8');
-//         return true;
-//     }
-
-//     return false;
-// }
-
-// module.exports = {
-//     getAll,
-//     update,
-//     add,
-//     remove,
-// };
-
 const db = require('./firestore');
 const TODOS_COLLECTION = 'todos';
 
+/**
+ * Get all todos from Firestore.
+ * @async
+ * @return {Promise<Array<Object>>} A promise that resolves to an array of todo objects.
+ */
 async function getAll() {
   const snapshot = await db.collection(TODOS_COLLECTION).get();
+  console.log('Firestore snapshot docs:', snapshot.docs.length);
   return snapshot.docs.map((doc) => ({id: doc.id, ...doc.data()}));
 }
 
+/**
+ * Add a new todo to Firestore.
+ * @async
+ * @param {Object} newTodoData - The data for the new todo.
+ * @return {Promise<Object>} A promise that resolves to the newly added todo object.
+ */
 async function add(newTodoData) {
     const newTodo = {
         ...newTodoData,
@@ -65,6 +28,13 @@ async function add(newTodoData) {
   return {id: doc.id, ...doc.data()};
 }
 
+/**
+ * Update a todo by ID in Firestore.
+ * @async
+ * @param {string} id - The ID of the todo to update.
+ * @param {Object} updatedFields - The fields to update.
+ * @return {Promise<Object>} A promise that resolves to the updated todo object.
+ */
 async function update(id, updatedFields) {
   const docRef = db.collection(TODOS_COLLECTION).doc(id);
   await docRef.update(updatedFields);
@@ -72,6 +42,12 @@ async function update(id, updatedFields) {
   return {id: doc.id, ...doc.data()};
 }
 
+/**
+ * Remove a todo by ID from Firestore.
+ * @async
+ * @param {string} id - The ID of the todo to remove.
+ * @return {Promise<boolean>} A promise that resolves to true if deleted, or false if not found.
+ */
 async function remove(id) {
   const docRef = db.collection(TODOS_COLLECTION).doc(id);
   const doc = await docRef.get();

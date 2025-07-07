@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   LegacyCard,
   ResourceList,
@@ -5,38 +6,17 @@ import {
   Text,
   LegacyStack,
   Button,
-  Badge
+  Badge,
+  InlineStack,
+  Card,
+  Box,
+  Toast
 } from '@shopify/polaris';
-import {useContext, useState} from 'react';
-import TodoContext from '../context/TodoContext';
+import useTodoActions from '../hooks/useTodoActions';
 
-import {updateTodoAPi, deleteTodoApi} from '../services/todoServices'
-
-function ListTodo() {
+function ListTodo({ todos, setTodos }) {
   const [selectedItems, setSelectedItems] = useState([]);
-  const { todos, setTodos } = useContext(TodoContext); 
-  
-  const updateTodo = async (id) => {
-    try {
-      const todo = todos.find(t => t.id === id);
-      if (!todo) return;
-
-      const updatedTodo = await updateTodoAPi(id, { isCompleted: !todo.isCompleted });
-      setTodos(todos.map(t => t.id === id ? updatedTodo : t ));
-    } catch (error) {
-      console.error("Failed to update todo: ", error.message);
-    }
-  };
-
-  const deleteTodo = async (id) => {
-    try {
-      await deleteTodoApi(id);
-      setTodos(todos.filter( todo => todo.id !== id));
-      console.log(`Todo ${id} deleted successfully`);
-    } catch (error) {
-      console.error("Failed to delete todo:", error.message);
-    }
-  };
+  const { loadingButtons, toastMessage, setToastMessage, updateTodo, deleteTodo, updateSelectedTodos, deleteSelectedTodos } = useTodoActions({todos, setTodos, setSelectedItems});
 
   function renderItem(todo) {
     const { id, text, isCompleted } = todo;
@@ -50,19 +30,27 @@ function ListTodo() {
             </Text>
           </LegacyStack.Item>
           <Badge tone={isCompleted ? "success" : "attention"}>
-            {isCompleted ? "complete" : "Incomplete"}
+            {isCompleted ? "completed" : "Incomplete"}
           </Badge>
           <Button
             size="slim"
             variant={isCompleted ? "secondary" : "primary"}
-            onClick={() => updateTodo(id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              updateTodo(id);
+            }}
+            disabled={loadingButtons[`${id}`]}
           >
             {isCompleted ? "Undo Complete" : "Mark Complete"}
           </Button>
           <Button
             size="slim"
             tone="critical"
-            onClick={() => deleteTodo(id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteTodo(id);
+            }}
+            disabled={loadingButtons[`${id}`]}
           >
             Delete
           </Button>
@@ -72,15 +60,66 @@ function ListTodo() {
   }
 
   return (
-    <LegacyCard>
-      <ResourceList
-        items={todos}
-        renderItem={renderItem}
-        selectedItems={selectedItems}
-        onSelectionChange={setSelectedItems}
-        selectable
-      />
-    </LegacyCard>
+    <React.Fragment>
+      <LegacyCard>
+        <ResourceList
+          items={todos}
+          renderItem={renderItem}
+          selectedItems={selectedItems}
+          onSelectionChange={setSelectedItems}
+          persistActions
+          selectable
+          />
+      </LegacyCard>
+      { selectedItems.length > 0 && 
+        <LegacyStack 
+          alignment="center" 
+          distribution="center"
+        >
+          <Box paddingBlockStart='400'>
+            <Card>
+              <InlineStack gap="400">
+              <Button
+                size="slim"
+                tone="success"
+                variant="primary"
+                disabled={selectedItems.length === 0}
+                onClick={() => updateSelectedTodos(selectedItems, true)}
+                loading={loadingButtons["update-selected-true"]}
+                >
+                Complete
+              </Button>
+              <Button
+                size="slim"
+                disabled={selectedItems.length === 0}
+                onClick={() => updateSelectedTodos(selectedItems, false)}
+                loading={loadingButtons["update-selected-false"]}
+                >
+                Incomplete
+              </Button>
+              <Button
+                size="slim"
+                tone="critical"
+                disabled={selectedItems.length === 0}
+                onClick={() => deleteSelectedTodos(selectedItems)}
+                loading={loadingButtons["delete-selected"]}
+                >
+                Delete Selected
+              </Button>
+              </InlineStack>
+            </Card>
+          </Box>
+        </LegacyStack>
+      }
+      {toastMessage && (
+        <Toast 
+          content={toastMessage.message} 
+          onDismiss={() => setToastMessage(null)}  
+          error={toastMessage.type === 'error' ? true : false}
+          tone="magic"
+        />
+      )}
+    </React.Fragment>
   );
 }
 

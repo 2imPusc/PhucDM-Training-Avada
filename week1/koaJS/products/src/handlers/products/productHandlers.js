@@ -1,22 +1,25 @@
-const { getAll, getOne, getLimit, sortByCreateAt, createProd, removeProd, updatedProd } = require('../../database/productsRepository');
+const { 
+    getProducts: getProductsRepo, 
+    getOne, 
+    createProduct: createProductRepo, 
+    removeProduct: removeProductRepo, 
+    updateProduct: updateProductRepo 
+} = require('../../database/productsRepository');
 
+
+/**
+ * Get the list of all products and return via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @returns {Promise<void>} Returns a response containing the list of products.
+ */
 async function getProducts (ctx) {
     try {
-        const { limit: numLimit, orderBy: sortBy } = ctx.query;
+        const { limit , orderBy } = ctx.query;
 
-        let products = getAll();
+        const products = getProductsRepo({ limit, orderBy });
 
-        if (numLimit !== null || sortBy !== null) {
-            if (sortBy) {
-                products = sortByCreateAt(products, sortBy);
-            }
-
-            if (numLimit) {
-                products = getLimit(products, parseInt(numLimit));
-            }
-        }
-
-        return ctx.body = { 
+        ctx.body = { 
             data: products 
         }
     } catch (error) {
@@ -28,23 +31,22 @@ async function getProducts (ctx) {
     }
 }
 
+/**
+ * Get a product by id (with optional fields) and return via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @returns {Promise<void>} Returns a response containing the product data or an error if not found.
+ */
 async function getProductById (ctx) {
     try {
         const id = ctx.params.id;
         const fields = ctx.query.fields;
         console.log('id: ', id, 'fields:', fields);
         const product = getOne(id, fields);
-        if (product) {
-            ctx.status = 200;
-            ctx.body = {
-                data: product
-            }
-        } else {
-            ctx.status = 404;
-            ctx.body = {
-                success: false,
-                error: 'Product not found'
-            }
+
+        ctx.status = 200;
+        ctx.body = {
+            data: product
         }
     } catch (error) {
         ctx.status = 500;
@@ -55,10 +57,16 @@ async function getProductById (ctx) {
     }
 }
 
+/**
+ * Create a new product and return it via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @returns {Promise<void>} Returns a response containing the newly created product.
+ */
 async function createProduct (ctx) {
     try {
         const productData = ctx.request.body;
-        const newProduct = createProd(productData);
+        const newProduct = createProductRepo(productData);
         ctx.body = {
             success: true,
             data: newProduct
@@ -72,14 +80,20 @@ async function createProduct (ctx) {
     }
 }
 
+/**
+ * Delete a product by id and return confirmation via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @returns {Promise<void>} Returns a response confirming deletion or an error if not found.
+ */
 async function deleteProduct (ctx) {
     try {
         const id = ctx.params.id;
-        console.log('Deleting product with id:', id);
-        const isDeleted = removeProd(id);
-        if (isDeleted) {
-            ctx.status = 204;
-            console.log('Product deleted successfully', isDeleted);
+        removeProductRepo(id);
+        ctx.status = 200;
+        ctx.body = {
+            success: true,
+            message: "Product deleted successfully"
         }
     } catch (error) {
         ctx.status = 500;
@@ -90,32 +104,28 @@ async function deleteProduct (ctx) {
     }
 }
 
+/**
+ * Update a product by id and return the updated product via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @returns {Promise<void>} Returns a response containing the updated product or an error if not found.
+ */
 async function updateProduct (ctx) {
     try {
         const id = ctx.params.id;
-        const productData = ctx.request.body;
-        console.log('Updating product with id:', id, 'Data:', productData);
-        
-        const updatedProduct = updatedProd(id, productData);
-        if (updatedProduct) {
-            ctx.body = {
-                success: true,
-                data: updatedProduct
-            }
-        } else {
-            ctx.status = 404;
-            ctx.body = {
-                success: false,
-                error: 'Product not found'
-            }
-        }
+        const productData = ctx.request.body;        
+        const updatedProduct = updateProductRepo(id, productData);
+        ctx.body = {
+            success: true,
+            data: updatedProduct
+        };
     } catch (error) {
         ctx.status = 500;
         ctx.body = {
             success: false,
             error: error.message
-        }
-    }
+        };
+    };
 }
 
 module.exports = {

@@ -1,140 +1,97 @@
-// const {getAll, update, add, remove} = require('../database/todoRepository');
-
-// async function getTodos(ctx) {
-//     try {
-//         const todos = getAll();
-//         ctx.body = {
-//             data: todos,
-//         };
-//     } catch (error) {
-//         ctx.status = 500;
-//         ctx.body = {
-//             success: false,
-//             error: error.message,
-//         };
-//     }
-// }
-
-// async function createTodo(ctx) {
-//     try {
-//         const newTodoData = ctx.request.body;
-//         const newTodo = add(newTodoData);
-//         ctx.status = 201;
-//         ctx.body = {
-//             data: newTodo,
-//         };
-//     } catch (error) {
-//         ctx.status = 500;
-//         ctx.body = {
-//             success: false,
-//             error: error.message,
-//         };
-//     }
-// }
-
-// async function updateTodo(ctx) {
-//     try {
-//         const id = parseInt(ctx.params.id);
-//         const updatedData = ctx.request.body;
-//         const updatedTodo = update(id, updatedData);
-//         ctx.body = {
-//             data: updatedTodo,
-//         };
-//     } catch (error) {
-//         ctx.status = 500;
-//         ctx.body = {
-//             success: false,
-//             error: error.message,
-//         };
-//     }
-// }
-
-// async function deleteTodo(ctx) {
-//     try {
-//         const id = parseInt(ctx.params.id, 10);
-//         const isDeleted = remove(id);
-//         if (isDeleted) {
-//             ctx.status = 204;
-//             console.log(`Todo ${id} deleted successfully`);
-//         } else {
-//             ctx.status = 404;
-//             ctx.body = {
-//                 success: false,
-//                 error: 'Todo not found',
-//             };
-//         }
-//     } catch (error) {
-//         ctx.status = 500;
-//         ctx.body = {
-//             success: false,
-//             error: error.message,
-//         };
-//     }
-// }
-
-// module.exports = {
-//     getTodos,
-//     createTodo,
-//     updateTodo,
-//     deleteTodo,
-// };
-
 const {getAll, update, add, remove} = require('../database/todoRepository');
 
+/**
+ * Get the list of all todos and return via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @return {Promise<void>} return a response containing the list of todos.
+ */
 async function getTodos(ctx) {
-  try {
-    const todos = await getAll();
-    ctx.body = {data: todos};
-  } catch (error) {
-    ctx.status = 500;
-    ctx.body = {success: false, error: error.message};
-  }
-}
-
-async function createTodo(ctx) {
-  try {
-    const newTodoData = ctx.request.body;
-    console.log('DEBUG: ', newTodoData);
-    const newTodo = await add(newTodoData);
-    ctx.status = 201;
-    ctx.body = {data: newTodo};
-  } catch (error) {
-    ctx.status = 500;
-    ctx.body = {success: false, error: error.message};
-  }
-}
-
-async function updateTodo(ctx) {
-  try {
-    const id = ctx.params.id;
-    const updatedData = ctx.request.body;
-    const updatedTodo = await update(id, updatedData);
-    ctx.body = {data: updatedTodo};
-  } catch (error) {
-    ctx.status = 500;
-    ctx.body = {success: false, error: error.message};
-  }
-}
-
-async function deleteTodo(ctx) {
-  try {
-    const id = ctx.params.id;
-    const isDeleted = await remove(id);
-    if (isDeleted) {
-      ctx.status = 204;
-    } else {
-      ctx.status = 404;
-      ctx.body = {success: false, error: 'Todo not found'};
+    try {
+        const todos = await getAll();
+        ctx.body = {
+            data: todos,
+        };
+    } catch (error) {
+        ctx.status = 500;
+        ctx.body = {
+            success: false,
+            error: error.message,
+        };
     }
-  } catch (error) {
-    ctx.status = 500;
-    ctx.body = {success: false, error: error.message};
-  }
+}
+
+/**
+ * Create a new todo and return it via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @return {Promise<void>} return a response containing the newly created todo.
+ */
+async function createTodo(ctx) {
+    try {
+        const newTodoData = ctx.request.body;
+        const newTodo = await add(newTodoData);
+        ctx.status = 201;
+        ctx.body = {
+            success: true,
+            data: newTodo,
+        };
+    } catch (error) {
+        ctx.status = 500;
+        ctx.body = {
+            success: false,
+            error: error.message,
+        };
+    }
+}
+
+/**
+ * Update a todo by id and return the updated todo via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @return {Promise<void>} return a response containing the updated todo.
+ */
+async function updateTodo(ctx) {
+    try {
+        const id = ctx.params.id;
+        const updatedData = ctx.request.body;
+        const updatedTodo = await update(id, updatedData);
+        ctx.body = {
+            success: true,
+            data: updatedTodo,
+        };
+    } catch (error) {
+        ctx.status = 500;
+        ctx.body = {
+            success: false,
+            error: error.message,
+        };
+    }
+}
+
+/**
+ * Delete a todo by id via HTTP.
+ * @async
+ * @param {Object} ctx - Koa context object.
+ * @return {Promise<void>} return a response indicating the result of the deletion.
+ */
+async function deleteTodo(ctx) {
+    try {
+        const id = ctx.params.id;
+        await remove(id);
+        ctx.status = 200;
+    } catch (error) {
+        ctx.status = 500;
+        ctx.body = {
+            success: false,
+            error: error.message,
+        };
+    }
 }
 
 module.exports = {
-  getTodos,
-  createTodo,
-  updateTodo,
-  deleteTodo,
+    getTodos,
+    createTodo,
+    updateTodo,
+    deleteTodo,
 };

@@ -1,79 +1,121 @@
 const fs = require('fs');
 const path = require('path');
+const { v4 : uuidv4 } = require('uuid')
+const sortByCreatedAt = require('../utils/sortByCreatedAt');
+const pickFields = require('../utils/pickFields');
+
 const dataPath = path.join(__dirname, 'products.json');
 
-const { data : products } = require('./products.json');
+/**
+ * Read the list of products from the JSON file.
+ * @returns {Array<Object>} The list of products.
+ */
+function readProducts() {
+    return JSON.parse(fs.readFileSync(dataPath, 'utf8')).data;
+}
 
-function getAll() {
+/**
+ * Write the list of products to the JSON file.
+ * @param {Array<Object>} products - The list of products to write.
+ */
+function writeProducts(products) {
+    fs.writeFileSync(dataPath, JSON.stringify({ data: products }, null, 2), 'utf8');
+}
+
+/**
+ * Get the list of products, with optional limit and sorting.
+ * @param {Object} [options]
+ * @param {number} [options.limit] - Limit the number of products returned.
+ * @param {'asc'|'desc'} [options.orderBy] - Sort order by createdAt.
+ * @returns {Array<Object>} The list of products.
+ */
+function getProducts({limit, orderBy} = {}) {
+    let products = readProducts();
+    if (orderBy) {
+        products = sortByCreatedAt(products, orderBy);
+    }
+
+    if (limit) {
+        products = products.slice(0, limit);
+    }
+
     return products;
 }
 
+/**
+ * Get a product by id, optionally selecting specific fields.
+ * @param {string} id - The product ID.
+ * @param {string} [fields] - Comma-separated list of fields to return.
+ * @returns {Object} The product object with selected fields, or throws an error if not found.
+ * @throws {Error} If no product with the given ID is found.
+ */
 function getOne(id, fields) {
-    const product = products.find(product => product.id === parseInt(id));
-    console.log('product: ', product);
+    const products = readProducts();
+    const product = products.find(product => product.id === id);
+    if (!product) {
+        throw new Error('Product not found');
+    };
     if (fields) {
-        const selectedFields = fields.split(',');
-        console.log('selectedFields: ', selectedFields);
-        return selectedFields.reduce((obj, field) => {
-            if (product[field]) {
-                obj[field] = product[field];
-            }
-            return obj;
-        }, {});
+        return pickFields(product, fields);
     }
     return product;
 }
 
-function getLimit(products, limit) {
-    return products.slice(0, limit);
-}
-
-function sortByCreateAt (productsort = products, orderBy = 'desc') {
-    return productsort.slice().sort((a, b) => {
-        const dateA = new Date(a.createdAt);
-        const dateB = new Date(b.createdAt);
-        return orderBy === 'asc' ? dateA - dateB : dateB - dateA;
-    })
-}
-
-function createProd (product) {
+/**
+ * Create a new product.
+ * @param {Object} product - The product data.
+ * @returns {Object} The newly created product with id and createdAt.
+ */
+function createProduct (product) {
+    const products = readProducts();
     const newProduct = {
-        id: products.length + 1,
+        id: uuidv4(),
         ...product, 
-        createdAt: new Date().toISOString()
+        createdAt: new Date()
     }
-    products.push(newProduct);
-    fs.writeFileSync(dataPath, JSON.stringify({ data: products }, null, 2), 'utf8');
+    const newProducts = [...products, newProduct];
+    writeProducts(newProducts)
     return newProduct;
 }
 
-function removeProd(id) {
-    const index = products.findIndex(product => product.id === parseInt(id));
-    console.log('index: ', index);
-    if (index !== -1) {
-        products.splice(index, 1);
-        fs.writeFileSync(dataPath, JSON.stringify({ data: products }, null, 2), 'utf8');
-        return true;
-    }
-    return false;   
+/**
+ * Remove a product by ID.
+ * @param {string} id - The product ID.
+ * @throws {Error} If no product with the given ID is found.
+ */
+function removeProduct(id) {
+    const products = readProducts();
+    const newProducts = products.filter(product => product.id !== id);
+    writeProducts(newProducts);
 }
 
-function updatedProd (id, updatedData) {
-    const index = products.findIndex(product => product.id === parseInt(id));
-    if (index !== -1) {
-        products[index] = { ...products[index], ...updatedData };
-        fs.writeFileSync(dataPath, JSON.stringify({ data: products }, null, 2), 'utf8');
-        return products[index];
-    }
-    return null;
+/**
+ * Update a product by ID.
+ * @param {string} id - The product ID.
+ * @param {Object} updateData - The data to update.
+ * @returns {Object} The updated product.
+ * @throws {Error} If no product with the given ID is found.
+ */
+function updateProduct (id, updateData) {
+    const products = readProducts();
+    const newProducts = products.map( product => {
+        if (product.id !== id) {
+            return product;
+        }
+        return {
+            ...product,
+            ...updateData,
+        };
+    });
+    const updatedProduct = newProducts.find(product => product.id === id);
+    writeProducts(newProducts);
+    return updatedProduct;
 }
 
 module.exports = {
-    getAll,
+    getProducts,
     getOne,
-    getLimit,
-    sortByCreateAt,
-    createProd,
-    removeProd,
-    updatedProd
+    createProduct,
+    removeProduct,
+    updateProduct
 };
